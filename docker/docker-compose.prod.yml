@@ -1,0 +1,17 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+      target: prod
+    ports:
+      - "3000:80"
+    volumes: []
+    restart: unless-stopped
+
+  backend:
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
+    volumes:
+      - ./data:/app/data
+      - ./snapshots:/app/snapshots
+      - ./models:/app/models
+    restart: unless-stopped

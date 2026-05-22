@@ -1,0 +1,13 @@
+.env
+backend/.env
+frontend/.env
+data/*.db
+data/*.db-*
+snapshots/**/*.jpg
+snapshots/**/*.png
+models/*.pt
+node_modules
+dist
+__pycache__
+.pytest_cache
+.venv

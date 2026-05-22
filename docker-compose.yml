@@ -1,0 +1,83 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: anpr-redis
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - anpr
+
+  backend:
+    build:
+      context: ./backend
+    container_name: anpr-backend
+    env_file:
+      - ./backend/.env.example
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/app:/app/app
+      - ./data:/app/data
+      - ./snapshots:/app/snapshots
+      - ./models:/app/models
+    depends_on:
+      - redis
+    networks:
+      - anpr
+    restart: unless-stopped
+
+  backend-gpu:
+    profiles: ["gpu"]
+    build:
+      context: ./backend
+    container_name: anpr-backend-gpu
+    env_file:
+      - ./backend/.env.example
+    environment:
+      YOLO_DEVICE: "0"
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/app:/app/app
+      - ./data:/app/data
+      - ./snapshots:/app/snapshots
+      - ./models:/app/models
+    depends_on:
+      - redis
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    networks:
+      - anpr
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      target: dev
+    container_name: anpr-frontend
+    environment:
+      VITE_API_URL: http://localhost:8000
+      VITE_WS_URL: ws://localhost:8000/ws/detections
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - anpr
+    restart: unless-stopped
+
+networks:
+  anpr:
+    driver: bridge
+
+volumes:
+  redis-data:

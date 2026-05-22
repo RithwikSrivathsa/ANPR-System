@@ -1,0 +1,12 @@
+[
+  {
+    "name": "Gate 1",
+    "rtsp_url": "rtsp://username:password@192.168.1.50:554/Streaming/Channels/101",
+    "enabled": true
+  },
+  {
+    "name": "Parking Exit",
+    "rtsp_url": "rtsp://username:password@192.168.1.51:554/live",
+    "enabled": true
+  }
+]
