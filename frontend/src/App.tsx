@@ -4,6 +4,7 @@ import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Too
 import { deleteDetection } from "./api/client";
 import { CameraCard } from "./components/CameraCard";
 import { DetectionTable } from "./components/DetectionTable";
+import { LogsPanel } from "./components/LogsPanel";
 import { Sidebar } from "./components/Sidebar";
 import { StatCard } from "./components/StatCard";
 import { SettingsPanel } from "./pages/SettingsPanel";
@@ -11,13 +12,18 @@ import { useAnprStore } from "./store/useAnprStore";
 import { connectRealtime } from "./utils/realtime";
 
 export function App() {
-  const { cameras, detections, analytics, connected, loading, load } = useAnprStore();
+  const { cameras, detections, logs, analytics, connected, loading, load } = useAnprStore();
   const [plate, setPlate] = useState("");
   const [cameraFilter, setCameraFilter] = useState("");
 
   useEffect(() => {
     void load();
-    return connectRealtime();
+    const interval = window.setInterval(() => void load(), 15000);
+    const disconnect = connectRealtime();
+    return () => {
+      window.clearInterval(interval);
+      disconnect();
+    };
   }, [load]);
 
   const filtered = useMemo(
@@ -118,6 +124,8 @@ export function App() {
             </div>
           </div>
         </section>
+
+        <LogsPanel logs={logs} cameras={cameras} />
 
         <SettingsPanel />
       </main>

@@ -22,6 +22,12 @@ class Settings(BaseSettings):
     duplicate_timeout_seconds: int = Field(default=300, ge=1)
     ocr_confidence_threshold: float = Field(default=0.65, ge=0, le=1)
     detection_confidence_threshold: float = Field(default=0.35, ge=0, le=1)
+    paddle_use_gpu: bool = False
+    plate_min_aspect_ratio: float = Field(default=1.8, gt=0)
+    plate_max_aspect_ratio: float = Field(default=7.5, gt=0)
+    plate_crop_padding_x: float = Field(default=0.35, ge=0, le=2)
+    plate_crop_padding_y: float = Field(default=0.35, ge=0, le=2)
+    frame_ignore_top_ratio: float = Field(default=0.12, ge=0, le=0.5)
     jwt_secret: str = "change-me"
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 1440

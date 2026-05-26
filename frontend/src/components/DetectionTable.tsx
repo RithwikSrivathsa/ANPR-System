@@ -1,6 +1,7 @@
 import { Download, Trash2 } from "lucide-react";
 import { snapshotUrl } from "../api/client";
 import type { Camera, Detection } from "../types";
+import { formatIst } from "../utils/time";
 
 export function DetectionTable({
   detections,
@@ -37,7 +38,7 @@ export function DetectionTable({
             {detections.map((detection, index) => (
               <tr key={detection.id} className={`border-t border-line ${index === 0 ? "plate-pulse" : ""}`}>
                 <td className="p-4 font-mono text-base text-amber">{detection.plate_text}</td>
-                <td className="p-4 text-slate-300">{new Date(detection.detected_at).toLocaleString()}</td>
+                <td className="p-4 text-slate-300">{formatIst(detection.detected_at)}</td>
                 <td className="p-4">{detection.camera_name ?? cameraName(detection.camera_id)}</td>
                 <td className="p-4">
                   <img src={snapshotUrl(detection.snapshot_path)} className="h-12 w-24 rounded object-cover" />

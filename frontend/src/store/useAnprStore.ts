@@ -1,10 +1,11 @@
 import { create } from "zustand";
-import { createCamera, deleteCamera, getAnalytics, listCameras, listDetections } from "../api/client";
-import type { Analytics, Camera, Detection } from "../types";
+import { createCamera, deleteCamera, getAnalytics, listCameras, listDetections, listLogs } from "../api/client";
+import type { Analytics, Camera, Detection, SystemLog } from "../types";
 
 type State = {
   cameras: Camera[];
   detections: Detection[];
+  logs: SystemLog[];
   analytics?: Analytics;
   connected: boolean;
   loading: boolean;
@@ -17,12 +18,18 @@ type State = {
 export const useAnprStore = create<State>((set, get) => ({
   cameras: [],
   detections: [],
+  logs: [],
   connected: false,
   loading: false,
   load: async () => {
     set({ loading: true });
-    const [cameras, detections, analytics] = await Promise.all([listCameras(), listDetections({ limit: 100 }), getAnalytics()]);
-    set({ cameras, detections, analytics, loading: false });
+    const [cameras, detections, analytics, logs] = await Promise.all([
+      listCameras(),
+      listDetections({ limit: 100 }),
+      getAnalytics(),
+      listLogs({ limit: 80 })
+    ]);
+    set({ cameras, detections, analytics, logs, loading: false });
   },
   addCamera: async (payload) => {
     const camera = await createCamera(payload);

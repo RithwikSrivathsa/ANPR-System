@@ -36,6 +36,16 @@ class DetectionRead(BaseModel):
     bbox: str | None = None
 
 
+class SystemLogRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    level: str
+    message: str
+    camera_id: int | None = None
+    created_at: datetime
+
+
 class DetectionEvent(DetectionRead):
     camera_name: str
     type: str = "detection"

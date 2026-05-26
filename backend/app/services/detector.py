@@ -13,6 +13,7 @@ logger = get_logger(__name__)
 @dataclass(slots=True)
 class PlateCandidate:
     bbox: tuple[int, int, int, int]
+    raw_bbox: tuple[int, int, int, int]
     confidence: float
     crop: np.ndarray
 
@@ -58,7 +59,21 @@ class PlateDetector:
                 x2, y2 = min(width - 1, x2), min(height - 1, y2)
                 if x2 <= x1 or y2 <= y1:
                     continue
-                crop = frame[y1:y2, x1:x2]
+                box_width = x2 - x1
+                box_height = y2 - y1
+                aspect_ratio = box_width / max(1, box_height)
+                if y1 < int(height * settings.frame_ignore_top_ratio):
+                    logger.debug("Rejected top-overlay candidate bbox=%s", (x1, y1, x2, y2))
+                    continue
+                if not settings.plate_min_aspect_ratio <= aspect_ratio <= settings.plate_max_aspect_ratio:
+                    logger.debug("Rejected non-plate aspect %.2f bbox=%s", aspect_ratio, (x1, y1, x2, y2))
+                    continue
+
+                pad_x = int(box_width * settings.plate_crop_padding_x)
+                pad_y = int(box_height * settings.plate_crop_padding_y)
+                px1, py1 = max(0, x1 - pad_x), max(0, y1 - pad_y)
+                px2, py2 = min(width - 1, x2 + pad_x), min(height - 1, y2 + pad_y)
+                crop = frame[py1:py2, px1:px2]
                 crop = cv2.resize(crop, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
-                candidates.append(PlateCandidate((x1, y1, x2, y2), conf, crop))
+                candidates.append(PlateCandidate((px1, py1, px2, py2), (x1, y1, x2, y2), conf, crop))
         return candidates

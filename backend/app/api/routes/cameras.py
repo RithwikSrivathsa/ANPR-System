@@ -1,4 +1,7 @@
+import asyncio
+
 from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
@@ -32,3 +35,16 @@ async def delete_camera(camera_id: int, request: Request, db: Session = Depends(
     await request.app.state.camera_manager.stop_camera(camera_id)
     db.delete(camera)
     db.commit()
+
+
+@router.get("/{camera_id}/preview")
+async def camera_preview(camera_id: int, request: Request):
+    async def stream():
+        boundary = b"--frame\r\nContent-Type: image/jpeg\r\n\r\n"
+        while True:
+            frame = await request.app.state.camera_manager.frames.get(camera_id)
+            if frame:
+                yield boundary + frame + b"\r\n"
+            await asyncio.sleep(0.12)
+
+    return StreamingResponse(stream(), media_type="multipart/x-mixed-replace; boundary=frame")

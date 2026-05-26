@@ -1,4 +1,5 @@
 import { Activity, Camera, WifiOff } from "lucide-react";
+import { previewUrl } from "../api/client";
 import type { Camera as CameraType, Detection } from "../types";
 
 export function CameraCard({ camera, latest }: { camera: CameraType; latest?: Detection }) {
@@ -6,8 +7,9 @@ export function CameraCard({ camera, latest }: { camera: CameraType; latest?: De
   return (
     <div className="glass overflow-hidden rounded-lg">
       <div className="relative aspect-video bg-black/70">
+        {online && <img src={previewUrl(camera.id)} className="absolute inset-0 h-full w-full object-cover" />}
         <div className="absolute inset-0 grid place-items-center text-slate-500">
-          <Camera size={42} />
+          {!online && <Camera size={42} />}
         </div>
         {latest?.bbox && <div className="absolute left-[22%] top-[44%] h-[18%] w-[45%] rounded border-2 border-mint shadow-glow" />}
         <div className="absolute left-3 top-3 rounded-md bg-black/60 px-2 py-1 text-xs">{camera.name}</div>

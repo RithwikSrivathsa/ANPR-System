@@ -31,3 +31,11 @@ export type Analytics = {
   frequent: Array<{ plate_text: string; count: number }>;
   metrics: { cpu_percent: number; memory_percent: number };
 };
+
+export type SystemLog = {
+  id: number;
+  level: string;
+  message: string;
+  camera_id?: number | null;
+  created_at: string;
+};

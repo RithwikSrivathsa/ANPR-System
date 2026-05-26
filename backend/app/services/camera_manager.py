@@ -3,6 +3,7 @@ from sqlalchemy.orm import sessionmaker
 from app.core.logging import get_logger
 from app.models import Camera
 from app.services.detector import PlateDetector
+from app.services.frame_store import LatestFrameStore
 from app.services.ocr import PlateOCR
 from app.services.realtime import RealtimeBroker
 from app.workers.stream_worker import StreamWorker
@@ -16,6 +17,7 @@ class CameraManager:
         self.broker = broker
         self.detector = PlateDetector()
         self.ocr = PlateOCR()
+        self.frames = LatestFrameStore()
         self.workers: dict[int, StreamWorker] = {}
 
     async def start_all_enabled(self) -> None:
@@ -31,7 +33,7 @@ class CameraManager:
             camera = db.get(Camera, camera_id)
             if not camera or not camera.enabled:
                 return
-            worker = StreamWorker(camera, self.session_factory, self.broker, self.detector, self.ocr)
+            worker = StreamWorker(camera, self.session_factory, self.broker, self.detector, self.ocr, self.frames)
             worker.start()
             self.workers[camera_id] = worker
             logger.info("Started camera worker %s", camera_id)
@@ -40,6 +42,7 @@ class CameraManager:
         worker = self.workers.pop(camera_id, None)
         if worker:
             await worker.stop()
+            await self.frames.remove(camera_id)
             logger.info("Stopped camera worker %s", camera_id)
 
     async def restart_camera(self, camera_id: int) -> None:

@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from app.api.routes import analytics, auth, cameras, detections, health, settings as settings_routes, websocket
+from app.api.routes import analytics, auth, cameras, detections, health, logs, settings as settings_routes, websocket
 from app.core.config import settings
 from app.core.logging import configure_logging, get_logger
 from app.db.session import Base, engine, SessionLocal
@@ -48,5 +48,6 @@ app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(detections.router, prefix="/detections", tags=["detections"])
 app.include_router(cameras.router, prefix="/cameras", tags=["cameras"])
 app.include_router(analytics.router, prefix="/analytics", tags=["analytics"])
+app.include_router(logs.router, prefix="/logs", tags=["logs"])
 app.include_router(settings_routes.router, prefix="/settings", tags=["settings"])
 app.include_router(websocket.router)
