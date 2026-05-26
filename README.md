@@ -121,6 +121,38 @@ Sample camera payloads live in `docker/sample-cameras.json`.
 - `WS /ws/detections`
 - `POST /auth/login`
 
+## Backend Usage
+
+Start the stack and open Swagger UI:
+
+```bash
+docker compose up --build
+```
+
+```text
+http://localhost:8000/docs
+```
+
+Common backend flow:
+
+1. Check backend health with `GET /health`.
+2. Add an RTSP camera with `POST /cameras`.
+3. Confirm stream status with `GET /cameras`.
+4. Open live preview directly at `GET /cameras/{camera_id}/preview`.
+5. Watch processing events with `GET /logs`.
+6. Review OCR output with `GET /detections`.
+7. Export detections with `GET /detections/export.csv`.
+
+Example camera request body:
+
+```json
+{
+  "name": "Gate 1",
+  "rtsp_url": "rtsp://username:password@camera-ip:554/stream1",
+  "enabled": true
+}
+```
+
 ## Runtime Notes
 
 - SQLite is stored in `data/anpr.db`.

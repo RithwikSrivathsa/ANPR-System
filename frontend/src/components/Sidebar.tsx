@@ -1,15 +1,16 @@
-import { BarChart3, Camera, Gauge, Settings, Table2 } from "lucide-react";
+import { BarChart3, Camera, Gauge, ScrollText, Settings, Table2 } from "lucide-react";
 
 const items = [
   { href: "#live", label: "Live", icon: Gauge },
   { href: "#detections", label: "Detections", icon: Table2 },
+  { href: "#logs", label: "Logs", icon: ScrollText },
   { href: "#analytics", label: "Analytics", icon: BarChart3 },
   { href: "#settings", label: "Settings", icon: Settings }
 ];
 
 export function Sidebar() {
   return (
-    <aside className="fixed inset-y-0 left-0 z-20 hidden w-64 border-r border-line bg-ink/80 px-4 py-6 backdrop-blur-xl lg:block">
+    <aside className="fixed inset-y-0 left-0 z-20 hidden w-64 border-r border-line bg-ink/90 px-4 py-6 backdrop-blur-xl lg:block">
       <div className="mb-8 flex items-center gap-3">
         <div className="flex h-11 w-11 items-center justify-center rounded-md bg-mint/15 text-mint">
           <Camera size={24} />
@@ -27,6 +28,12 @@ export function Sidebar() {
           </a>
         ))}
       </nav>
+      <div className="absolute bottom-6 left-4 right-4 rounded-lg border border-line bg-white/5 p-3">
+        <p className="text-xs font-medium text-slate-300">Backend API</p>
+        <a href="http://localhost:8000/docs" target="_blank" className="mt-2 block truncate text-sm text-mint hover:text-white">
+          localhost:8000/docs
+        </a>
+      </div>
     </aside>
   );
 }

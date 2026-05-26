@@ -1,4 +1,4 @@
-import { Activity, Camera, Cpu, Database } from "lucide-react";
+import { Activity, Camera, Cpu, Database, RefreshCw, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { deleteDetection } from "./api/client";
@@ -44,11 +44,18 @@ export function App() {
       <main className="min-h-screen px-4 py-5 lg:ml-64 lg:px-8">
         <header className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-center">
           <div>
-            <p className="text-sm uppercase text-mint">Realtime ANPR</p>
+            <p className="text-sm uppercase text-mint">Realtime ANPR Operations</p>
             <h1 className="text-3xl font-semibold tracking-normal">Automatic Number Plate Recognition</h1>
+            <p className="mt-1 text-sm text-slate-400">Live RTSP monitoring, evidence capture, OCR processing, and audit logs.</p>
           </div>
-          <div className={`rounded-md border px-3 py-2 text-sm ${connected ? "border-mint/40 text-mint" : "border-coral/40 text-coral"}`}>
-            {connected ? "WebSocket connected" : "WebSocket offline"}
+          <div className="flex flex-wrap items-center gap-3">
+            <button onClick={() => void load()} className="flex items-center gap-2 rounded-md border border-line px-3 py-2 text-sm text-slate-200 hover:bg-white/8">
+              <RefreshCw size={16} />
+              Refresh
+            </button>
+            <div className={`rounded-md border px-3 py-2 text-sm ${connected ? "border-mint/40 text-mint" : "border-coral/40 text-coral"}`}>
+              {connected ? "Realtime connected" : "Realtime offline"}
+            </div>
           </div>
         </header>
 
@@ -59,40 +66,54 @@ export function App() {
           <StatCard label="CPU usage" value={`${Math.round(analytics?.metrics.cpu_percent ?? 0)}%`} icon={Cpu} tone="text-coral" />
         </section>
 
-        <section id="live" className="mb-6">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-xl font-semibold">Live Monitoring</h2>
-            {loading && <span className="text-sm text-slate-400">Loading streams...</span>}
-          </div>
-          <div className="grid gap-4 xl:grid-cols-3">
-            {cameras.map((camera) => (
-              <CameraCard key={camera.id} camera={camera} latest={latestByCamera(camera.id)} />
-            ))}
-            {cameras.length === 0 && <div className="glass rounded-lg p-8 text-center text-slate-400 xl:col-span-3">Add an RTSP camera to start monitoring.</div>}
-          </div>
-        </section>
+        <div className="mb-6 grid gap-4 2xl:grid-cols-[minmax(0,1fr)_26rem]">
+          <div className="space-y-6">
+            <section id="live">
+              <div className="mb-3 flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold">Live Monitoring</h2>
+                  <p className="text-sm text-slate-400">Camera previews update from backend MJPEG streams with ANPR overlays.</p>
+                </div>
+                {loading && <span className="text-sm text-slate-400">Loading streams...</span>}
+              </div>
+              <div className="grid gap-4 xl:grid-cols-2">
+                {cameras.map((camera) => (
+                  <CameraCard key={camera.id} camera={camera} latest={latestByCamera(camera.id)} />
+                ))}
+                {cameras.length === 0 && <div className="glass rounded-lg p-8 text-center text-slate-400 xl:col-span-2">Add an RTSP camera to start monitoring.</div>}
+              </div>
+            </section>
 
-        <section id="detections" className="mb-6">
-          <div className="mb-3 grid gap-3 md:grid-cols-[1fr_16rem]">
-            <input value={plate} onChange={(e) => setPlate(e.target.value)} placeholder="Search plate" className="rounded-md border border-line bg-white/5 px-3 py-2 outline-none focus:border-mint" />
-            <select value={cameraFilter} onChange={(e) => setCameraFilter(e.target.value)} className="rounded-md border border-line bg-white/5 px-3 py-2 outline-none focus:border-mint">
-              <option value="">All cameras</option>
-              {cameras.map((camera) => (
-                <option key={camera.id} value={camera.id}>
-                  {camera.name}
-                </option>
-              ))}
-            </select>
+            <section id="detections">
+              <div className="mb-3 grid gap-3 md:grid-cols-[1fr_16rem]">
+                <label className="relative">
+                  <Search className="pointer-events-none absolute left-3 top-2.5 text-slate-500" size={18} />
+                  <input value={plate} onChange={(e) => setPlate(e.target.value)} placeholder="Search by plate number" className="w-full rounded-md border border-line bg-white/5 py-2 pl-10 pr-3 outline-none focus:border-mint" />
+                </label>
+                <select value={cameraFilter} onChange={(e) => setCameraFilter(e.target.value)} className="rounded-md border border-line bg-white/5 px-3 py-2 outline-none focus:border-mint">
+                  <option value="">All cameras</option>
+                  {cameras.map((camera) => (
+                    <option key={camera.id} value={camera.id}>
+                      {camera.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <DetectionTable
+                detections={filtered}
+                cameras={cameras}
+                onDelete={async (id) => {
+                  await deleteDetection(id);
+                  await load();
+                }}
+              />
+            </section>
           </div>
-          <DetectionTable
-            detections={filtered}
-            cameras={cameras}
-            onDelete={async (id) => {
-              await deleteDetection(id);
-              await load();
-            }}
-          />
-        </section>
+
+          <aside className="space-y-4">
+            <LogsPanel logs={logs} cameras={cameras} />
+          </aside>
+        </div>
 
         <section id="analytics" className="mb-6 grid gap-4 xl:grid-cols-2">
           <div className="glass rounded-lg p-4">
@@ -124,8 +145,6 @@ export function App() {
             </div>
           </div>
         </section>
-
-        <LogsPanel logs={logs} cameras={cameras} />
 
         <SettingsPanel />
       </main>
