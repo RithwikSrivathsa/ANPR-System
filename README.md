@@ -157,8 +157,11 @@ Example camera request body:
 
 - SQLite is stored in `data/anpr.db`.
 - Snapshots are stored under `snapshots/{camera_id}/{date}`.
+- Training-quality accepted crops are stored under `snapshots/training/{camera_id}/{date}` when confidence is at least `TRAINING_SNAPSHOT_CONFIDENCE`.
 - Duplicate suppression is controlled by `DUPLICATE_TIMEOUT_SECONDS`.
 - Frame skipping is controlled by `FRAME_SKIP`.
+- Moving vehicles are handled by buffering multiple crops per track for `TRACK_CAPTURE_WINDOW_SECONDS`, OCRing the best candidates, then saving the best voted plate once.
+- To start with a clean dev database on container startup, set `RESET_DATA_ON_START=true`. This clears cameras, detections, logs, and snapshots, so keep it `false` for production.
 - RTSP reconnect uses exponential backoff up to 30 seconds.
 - The backend starts even if CUDA, Redis, PaddleOCR, or the YOLO model are not immediately available; degraded services log warnings.
 

@@ -36,8 +36,14 @@ export const useAnprStore = create<State>((set, get) => ({
     set({ cameras: [camera, ...get().cameras] });
   },
   removeCamera: async (id) => {
-    await deleteCamera(id);
-    set({ cameras: get().cameras.filter((camera) => camera.id !== id) });
+    const previous = get().cameras;
+    set({ cameras: previous.filter((camera) => camera.id !== id) });
+    try {
+      await deleteCamera(id);
+    } catch (error) {
+      set({ cameras: previous });
+      throw error;
+    }
   },
   pushEvent: (event) => {
     if (event.type === "detection" && "plate_text" in event) {

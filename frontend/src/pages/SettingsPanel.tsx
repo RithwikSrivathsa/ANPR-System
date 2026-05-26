@@ -8,7 +8,8 @@ export function SettingsPanel() {
   const [name, setName] = useState("");
   const [rtsp, setRtsp] = useState("");
   const [duplicateTimeout, setDuplicateTimeout] = useState(300);
-  const [ocrThreshold, setOcrThreshold] = useState(0.65);
+  const [ocrThreshold, setOcrThreshold] = useState(0.8);
+  const [savingCamera, setSavingCamera] = useState(false);
 
   useEffect(() => {
     void getSettings().then((settings) => {
@@ -19,9 +20,14 @@ export function SettingsPanel() {
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
-    await addCamera({ name, rtsp_url: rtsp, enabled: true });
-    setName("");
-    setRtsp("");
+    setSavingCamera(true);
+    try {
+      await addCamera({ name, rtsp_url: rtsp, enabled: true });
+      setName("");
+      setRtsp("");
+    } finally {
+      setSavingCamera(false);
+    }
   };
 
   return (
@@ -36,9 +42,9 @@ export function SettingsPanel() {
           RTSP URL
           <input value={rtsp} onChange={(e) => setRtsp(e.target.value)} placeholder="rtsp://user:pass@host:554/stream1" className="mt-2 w-full rounded-md border border-line bg-white/5 px-3 py-2 text-white outline-none focus:border-mint" required />
         </label>
-        <button className="flex items-center gap-2 rounded-md bg-mint px-4 py-2 font-semibold text-ink">
+        <button disabled={savingCamera} className="flex items-center gap-2 rounded-md bg-mint px-4 py-2 font-semibold text-ink disabled:cursor-wait disabled:opacity-60">
           <Plus size={18} />
-          Add camera
+          {savingCamera ? "Adding..." : "Add camera"}
         </button>
       </form>
       <div className="glass rounded-lg p-4">

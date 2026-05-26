@@ -42,9 +42,8 @@ async def camera_preview(camera_id: int, request: Request):
     async def stream():
         boundary = b"--frame\r\nContent-Type: image/jpeg\r\n\r\n"
         while True:
-            frame = await request.app.state.camera_manager.frames.get(camera_id)
-            if frame:
-                yield boundary + frame + b"\r\n"
+            frame = await request.app.state.camera_manager.frames.get_or_placeholder(camera_id)
+            yield boundary + frame + b"\r\n"
             await asyncio.sleep(0.12)
 
     return StreamingResponse(stream(), media_type="multipart/x-mixed-replace; boundary=frame")

@@ -10,6 +10,7 @@ from app.core.logging import configure_logging, get_logger
 from app.db.session import Base, engine, SessionLocal
 from app.services.camera_manager import CameraManager
 from app.services.realtime import RealtimeBroker
+from app.services.runtime_reset import reset_runtime_data
 
 configure_logging()
 logger = get_logger(__name__)
@@ -18,6 +19,7 @@ logger = get_logger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
+    reset_runtime_data(SessionLocal)
     broker = RealtimeBroker(settings.redis_url)
     manager = CameraManager(SessionLocal, broker)
     app.state.realtime = broker
